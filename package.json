@@ -4,7 +4,7 @@
   "main": "server.js",
   "scripts": {
     "start": "node server.js",
-    "build": "react-scripts build",
+    "build": "echo 'No build needed for backend'"
     "test": "react-scripts test",
     "eject": "react-scripts eject"
   },
