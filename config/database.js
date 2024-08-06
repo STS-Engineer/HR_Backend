@@ -6,6 +6,7 @@ const pool = new Pool({
   database: 'leave-management',
   password: '$#fKcdXPg4@ue8AW', 
   port: 5432,
+  ssl:true
 });
 
 module.exports = pool;
