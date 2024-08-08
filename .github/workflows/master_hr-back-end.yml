@@ -28,8 +28,7 @@ jobs:
       - name: Prune development dependencies
         run: npm prune --production
         
-      - name:  build, and test
-       
+      - name:  build project
           npm run build --if-present
          
       
