@@ -1,12 +1,14 @@
 const { Pool } = require('pg');
+require('dotenv').config();
 
 const pool = new Pool({
-  user: 'adminavo',
-  host: 'avo-adb-001.postgres.database.azure.com',
-  database: 'leave-management',
-  password: '$#fKcdXPg4@ue8AW', 
-  port: 5432,
-  ssl:true
+  user: process.env.PGUSER,
+  host: process.env.PGHOST,
+  database: process.env.PGDATABASE,
+  password: process.env.PGPASSWORD,
+  port: process.env.PGPORT,
+  ssl: { rejectUnauthorized: false }
 });
 
 module.exports = pool;
+
