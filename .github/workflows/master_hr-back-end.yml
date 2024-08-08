@@ -20,16 +20,16 @@ jobs:
         uses: actions/setup-node@v3
         with:
           node-version: '20.x'
-
+          cache: 'npm'
       - name: npm install, build, and test
-        run: |
+        run: 
           npm install
           
       - name: Prune development dependencies
         run: npm prune --production
         
       - name:  build, and test
-        run: |
+        run: 
           npm install   
           npm run build --if-present
           npm run test --if-present
@@ -49,7 +49,8 @@ jobs:
     environment:
       name: 'Production'
       url: ${{ steps.deploy-to-webapp.outputs.webapp-url }}
-
+    permissions:
+      id-token: write #This is required for requesting the JWT
     steps:
       - name: Download artifact from build job
         uses: actions/download-artifact@v3
