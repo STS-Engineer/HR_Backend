@@ -31,7 +31,7 @@ const registerUser = async (req, res) => {
     // Validate email format server-side
     const emailRegex = /^[a-zA-Z]+(\.[a-zA-Z]+)*@avocarbon\.com$/;
     const trimmedEmail = email.trim().toLowerCase();
-    if (!emailRegex.test(email)) {
+    if (!emailRegex.test(trimmedEmail)) {
       return res.status(400).json({ error: "Invalid email format" });
     }
 

@@ -15,14 +15,13 @@ app.use(cors());
 app.use(express.json());
 app.use(bodyParser.json());
 app.use("/uploads", express.static("uploads"));
+app.use("/auth", authRoutes);
+app.use("/leave-requests", leaveRequestsRouter);
+app.use("/mission-requests", missionRequestsRouter);
+app.use("/authorization-requests", authorizationRouter);
+app.use("/document-requests", docRequestsRouter);
 
-app.use("/api/auth", authRoutes);
-app.use("/api/leave-requests", leaveRequestsRouter);
-app.use("/api/mission-requests", missionRequestsRouter);
-app.use("/api/authorization-requests", authorizationRouter);
-app.use("/api/document-requests", docRequestsRouter);
-
-const PORT = process.env.PORT || 5000;
+const PORT = process.env.PORT || 3000;
 
 app.listen(PORT, () => {
   console.log(`Server is running on port ${PORT}`);

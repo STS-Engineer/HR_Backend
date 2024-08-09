@@ -87,5 +87,24 @@ CREATE TABLE document_requests (
 );
 
 
+--Modifications to add the relation between first approval and final approval 
+
+--  Remove the default value from the column
+ALTER TABLE users ALTER COLUMN role DROP DEFAULT;
+
+--  Temporarily change the column type to TEXT
+ALTER TABLE users ALTER COLUMN role TYPE TEXT USING role::TEXT;
+
+--  Drop the old enum type
+DROP TYPE user_role CASCADE;
+
+--  Create the new enum type with the new value
+CREATE TYPE user_role AS ENUM ('EMPLOYEE', 'MANAGER', 'HRMANAGER', 'PLANT_MANAGER');
+
+-- Change the column type back to the new enum type
+ALTER TABLE users ALTER COLUMN role TYPE user_role USING role::user_role;
+
+-- Restore the default value to the column
+ALTER TABLE users ALTER COLUMN role SET DEFAULT 'EMPLOYEE';
 
 

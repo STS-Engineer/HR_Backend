@@ -22,7 +22,7 @@ const createLeaveRequest = async (data) => {
     endDate,
     justification,
     justificationFile,
-    status = "Pending", // Default status if not provided
+    status = "Pending",
   } = data;
 
   try {
