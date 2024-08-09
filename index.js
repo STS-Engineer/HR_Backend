@@ -1,8 +1,6 @@
 const express = require("express");
 const cors = require("cors");
-require("dotenv").config();
 const bodyParser = require("body-parser");
-
 const authRoutes = require("./routes/authRoutes");
 const leaveRequestsRouter = require("./routes/leaveRequests");
 const missionRequestsRouter = require("./routes/missionRequests");
@@ -21,7 +19,7 @@ app.use("/mission-requests", missionRequestsRouter);
 app.use("/authorization-requests", authorizationRouter);
 app.use("/document-requests", docRequestsRouter);
 
-const PORT = process.env.PORT || 8080;
+const PORT = 3000;
 
 app.listen(PORT, () => {
   console.log(`Server is running on port ${PORT}`);
