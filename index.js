@@ -7,7 +7,7 @@ const authRoutes = require("./routes/authRoutes");
 const leaveRequestsRouter = require("./routes/leaveRequests");
 const missionRequestsRouter = require("./routes/missionRequests");
 const authorizationRouter = require("./routes/authorizationRequests");
-const docRequestsRouter = require("./routes/docRequets");
+const docRequestsRouter = require("./routes/docRequests");
 
 const app = express();
 
