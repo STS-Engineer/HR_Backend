@@ -2,17 +2,18 @@ const pool = require("../config/database");
 const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
 
+// Get Users
 const getUsers = async (req, res) => {
   try {
     const { rows } = await pool.query("SELECT * FROM users");
-    res.status(200).json(rows); // Send the users as JSON response
+    res.status(200).json(rows);
   } catch (error) {
     console.error(error.message);
     res.status(500).json({ error: "Internal server error" });
   }
 };
-module.exports = { getUsers };
 
+// Register User
 const registerUser = async (req, res) => {
   const {
     firstname,
@@ -25,17 +26,14 @@ const registerUser = async (req, res) => {
   } = req.body;
 
   try {
-    // Log the email received
     console.log("Email received:", email);
 
-    // Validate email format server-side
     const emailRegex = /^[a-zA-Z]+(\.[a-zA-Z]+)*@avocarbon\.com$/;
     const trimmedEmail = email.trim().toLowerCase();
     if (!emailRegex.test(email)) {
       return res.status(400).json({ error: "Invalid email format" });
     }
 
-    // Hash the password
     const hashedPassword = await bcrypt.hash(password, 10);
 
     const result = await pool.query(
@@ -46,7 +44,7 @@ const registerUser = async (req, res) => {
         lastname,
         userFunction,
         department,
-        email,
+        trimmedEmail,
         hashedPassword,
         role,
       ]
@@ -54,10 +52,12 @@ const registerUser = async (req, res) => {
 
     res.status(201).json(result.rows[0]);
   } catch (err) {
-    console.error(err);
+    console.error(err.message);
     res.status(500).json({ error: "Internal server error" });
   }
 };
+
+// Login User
 const loginUser = async (req, res) => {
   const { email, password } = req.body;
 
@@ -66,12 +66,12 @@ const loginUser = async (req, res) => {
       email,
     ]);
     if (rows.length === 0) {
-      return res.status(401).json({ error: "Invalid credentials" });
+      return res.status(401).json({ error: "Invalid email or password" });
     }
 
     const isMatch = await bcrypt.compare(password, rows[0].password);
     if (!isMatch) {
-      return res.status(401).json({ error: "Invalid credentials" });
+      return res.status(401).json({ error: "Invalid email or password" });
     }
 
     const payload = {
@@ -82,12 +82,12 @@ const loginUser = async (req, res) => {
       },
     };
 
-    jwt.sign(payload, "jwtSecret", { expiresIn: "1h" }, (err, token) => {
+    jwt.sign(payload, process.env.JWT_SECRET || "jwtSecret", { expiresIn: "1h" }, (err, token) => {
       if (err) throw err;
       res.json({ token, user: payload.user });
     });
   } catch (err) {
-    console.error(err);
+    console.error(err.message);
     res.status(500).json({ error: "Internal server error" });
   }
 };
