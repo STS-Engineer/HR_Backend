@@ -34,6 +34,14 @@ const registerUser = async (req, res) => {
     if (!emailRegex.test(trimmedEmail)) {
       return res.status(400).json({ error: "Invalid email format" });
     }
+    // Check if the email already exists
+    const emailCheck = await pool.query(
+      "SELECT * FROM users WHERE email = $1",
+      [trimmedEmail]
+    );
+    if (emailCheck.rows.length > 0) {
+      return res.status(400).json({ error: "Email already exists" });
+    }
 
     // Hash the password
     const hashedPassword = await bcrypt.hash(password, 10);
