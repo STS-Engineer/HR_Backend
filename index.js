@@ -19,11 +19,7 @@ app.use("/mission-requests", missionRequestsRouter);
 app.use("/authorization-requests", authorizationRouter);
 app.use("/document-requests", docRequestsRouter);
 
-<<<<<<< HEAD
-const PORT = 3000;
-=======
 const PORT = process.env.PORT || 5000;
->>>>>>> cb1cb62428bd1f2ceb62ef93105fd20c38a8bf97
 
 app.listen(PORT, () => {
   console.log(`Server is running on port ${PORT}`);
