@@ -58,7 +58,8 @@ jobs:
     environment:
       name: 'Production'
       url: ${{ steps.deploy-to-webapp.outputs.webapp-url }}
-
+    permissions:
+      id-token: write
     steps:
       - name: Download artifact from build job
         uses: actions/download-artifact@v3
@@ -75,4 +76,4 @@ jobs:
           app-name: 'Hr-back-end'
           slot-name: 'Production'
           publish-profile: ${{ secrets.AZUREAPPSERVICE_PUBLISHPROFILE_EDD2D0C182CC4AD0B76EE22CA2F8825B }}
-          package: .
+          package: release.zip
