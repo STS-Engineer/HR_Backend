@@ -39,7 +39,6 @@ const addLeaveRequest = [
     }
   },
 ];
-
 // Get all leave requests
 const fetchLeaveRequests = async (req, res) => {
   try {
