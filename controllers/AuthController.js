@@ -1,18 +1,35 @@
 const pool = require("../config/database");
 const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
+const fs = require("fs");
+const path = require("path");
 
 const getUsers = async (req, res) => {
   try {
     const { rows } = await pool.query("SELECT * FROM users");
-    res.status(200).json(rows); // Send the users as JSON response
+    res.status(200).json(rows);
   } catch (error) {
     console.error(error.message);
     res.status(500).json({ error: "Internal server error" });
   }
 };
-module.exports = { getUsers };
 
+const getUserById = async (req, res) => {
+  const { id } = req.params;
+
+  try {
+    const { rows } = await pool.query("SELECT * FROM users WHERE id = $1", [
+      id,
+    ]);
+    if (rows.length === 0) {
+      return res.status(404).json({ error: "User not found" });
+    }
+    res.status(200).json(rows[0]);
+  } catch (error) {
+    console.error(error.message);
+    res.status(500).json({ error: "Internal server error" });
+  }
+};
 const registerUser = async (req, res) => {
   const {
     firstname,
@@ -25,17 +42,22 @@ const registerUser = async (req, res) => {
   } = req.body;
 
   try {
-    // Log the email received
     console.log("Email received:", email);
 
-    // Validate email format server-side
     const emailRegex = /^[a-zA-Z]+(\.[a-zA-Z]+)*@avocarbon\.com$/;
     const trimmedEmail = email.trim().toLowerCase();
     if (!emailRegex.test(trimmedEmail)) {
       return res.status(400).json({ error: "Invalid email format" });
     }
 
-    // Hash the password
+    const emailCheck = await pool.query(
+      "SELECT * FROM users WHERE email = $1",
+      [trimmedEmail]
+    );
+    if (emailCheck.rows.length > 0) {
+      return res.status(400).json({ error: "Email already exists" });
+    }
+
     const hashedPassword = await bcrypt.hash(password, 10);
 
     const result = await pool.query(
@@ -91,5 +113,110 @@ const loginUser = async (req, res) => {
     res.status(500).json({ error: "Internal server error" });
   }
 };
+const updateUser = async (req, res) => {
+  const { id } = req.params;
+  const {
+    firstname,
+    lastname,
+    function: userFunction,
+    department,
+    email,
+    role,
+  } = req.body;
 
-module.exports = { registerUser, getUsers, loginUser };
+  try {
+    const { rows } = await pool.query(
+      `UPDATE users 
+       SET firstname = $1, lastname = $2, function = $3, department = $4, email = $5, role = $6 
+       WHERE id = $7 RETURNING *`,
+      [firstname, lastname, userFunction, department, email, role, id]
+    );
+
+    if (rows.length === 0) {
+      return res.status(404).json({ error: "User not found" });
+    }
+
+    res.status(200).json(rows[0]);
+  } catch (error) {
+    console.error(error.message);
+    res.status(500).json({ error: "Internal server error" });
+  }
+};
+const uploadProfilePhoto = async (req, res) => {
+  const { id } = req.params;
+  const file = req.file;
+
+  if (!file) {
+    return res.status(400).json({ error: "No file uploaded" });
+  }
+
+  try {
+    // Define the allowed file types (e.g., images only)
+    const allowedTypes = /jpeg|jpg|png|gif/;
+    const mimeType = allowedTypes.test(file.mimetype);
+
+    if (!mimeType) {
+      return res.status(400).json({ error: "Invalid file type" });
+    }
+
+    // Generate a unique filename and save the file
+    const fileExtension = path.extname(file.originalname);
+    const fileName = `${id}-profile${fileExtension}`;
+    const imagePath = path.join(__dirname, "..", "uploads", fileName);
+
+    fs.writeFileSync(imagePath, file.buffer);
+
+    // Save file path in the database
+    const fileUrl = `/uploads/${fileName}`;
+    const { rows } = await pool.query(
+      "UPDATE users SET profile_photo = $1 WHERE id = $2 RETURNING *",
+      [fileUrl, id]
+    );
+
+    if (rows.length === 0) {
+      return res.status(404).json({ error: "User not found" });
+    }
+
+    res.status(200).json({ message: "Profile photo updated", user: rows[0] });
+  } catch (error) {
+    console.error(error.message);
+    res.status(500).json({ error: "Internal server error" });
+  }
+};
+const getProfilePhoto = async (req, res) => {
+  const { id } = req.params;
+
+  try {
+    const { rows } = await pool.query(
+      "SELECT profile_photo FROM users WHERE id = $1",
+      [id]
+    );
+
+    if (rows.length === 0 || !rows[0].profile_photo) {
+      return res.status(404).json({ error: "Profile photo not found" });
+    }
+
+    const photoPath = path.join(__dirname, "..", rows[0].profile_photo);
+
+    if (!fs.existsSync(photoPath)) {
+      return res
+        .status(404)
+        .json({ error: "Profile photo not found on server" });
+    }
+
+    res.sendFile(photoPath);
+  } catch (error) {
+    console.error(error.message);
+    res.status(500).json({ error: "Internal server error" });
+  }
+};
+
+module.exports = {
+  registerUser,
+  getUsers,
+  loginUser,
+  getUserById,
+  updateUser,
+  uploadProfilePhoto,
+  getProfilePhoto,
+};
