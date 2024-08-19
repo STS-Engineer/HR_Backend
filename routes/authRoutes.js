@@ -11,7 +11,7 @@ const {
 } = require("../controllers/AuthController");
 const validateEmail = require("../middleware/validateEmail");
 const upload = multer({ storage: multer.memoryStorage() });
-
+const { authenticate } = require("../middleware/authenticateToken");
 const router = express.Router();
 
 router.get("/users", getUsers);
@@ -25,5 +25,6 @@ router.post(
   uploadProfilePhoto
 );
 router.get("/user/:id/photo", getProfilePhoto);
+router.patch("/update-password", authenticate, updatePassword);
 
 module.exports = router;
