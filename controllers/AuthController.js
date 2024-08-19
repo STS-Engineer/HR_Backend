@@ -210,6 +210,55 @@ const getProfilePhoto = async (req, res) => {
     res.status(500).json({ error: "Internal server error" });
   }
 };
+const updatePassword = async (req, res) => {
+  const { currentPassword, newPassword, confirmPassword } = req.body;
+  const userId = req.user.id; 
+
+  if (!currentPassword || !newPassword || !confirmPassword) {
+    return res.status(400).json({ message: "All fields are required." });
+  }
+
+  if (newPassword !== confirmPassword) {
+    return res
+      .status(400)
+      .json({ message: "New password and confirmation do not match." });
+  }
+
+  if (newPassword.length < 8) {
+    return res
+      .status(400)
+      .json({ message: "New password must be at least 8 characters long." });
+  }
+
+  try {
+    const result = await pool.query(
+      "SELECT password FROM users WHERE id = $1",
+      [userId]
+    );
+    if (result.rows.length === 0) {
+      return res.status(404).json({ message: "User not found." });
+    }
+
+    const user = result.rows[0];
+    const isMatch = await bcrypt.compare(currentPassword, user.password);
+    if (!isMatch) {
+      return res
+        .status(400)
+        .json({ message: "Current password is incorrect." });
+    }
+    const hashedPassword = await bcrypt.hash(newPassword, 10);
+    await pool.query("UPDATE users SET password = $1 WHERE id = $2", [
+      hashedPassword,
+      userId,
+    ]);
+
+    res.status(200).json({ message: "Password updated successfully." });
+  } catch (error) {
+    console.error("Server Error:", error);
+    res.status(500).json({ message: "Server error. Please try again later." });
+  }
+};
+
 
 module.exports = {
   registerUser,
@@ -219,4 +268,5 @@ module.exports = {
   updateUser,
   uploadProfilePhoto,
   getProfilePhoto,
+  updatePassword,
 };
