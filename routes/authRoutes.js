@@ -8,6 +8,7 @@ const {
   updateUser,
   uploadProfilePhoto,
   getProfilePhoto,
+  updatePassword,
 } = require("../controllers/AuthController");
 const validateEmail = require("../middleware/validateEmail");
 const upload = multer({ storage: multer.memoryStorage() });
